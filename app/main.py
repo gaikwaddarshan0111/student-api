@@ -38,7 +38,11 @@ def create_student(student: StudentCreate, db: Session = Depends(get_db)):
     }
 
 
-@app.get("/students")
-def get_students(db: Session = Depends(get_db)):
-    students = db.query(models.Student).all()
+@app.get("/students/{student_id}")
+def get_students(student_id: int ,db: Session = Depends(get_db)):
+    students = (
+        db.query(models.Student)
+        .filter(models.Student.id == student_id)
+        .first()
+    )
     return students
