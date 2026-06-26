@@ -1,6 +1,6 @@
 from fastapi import Depends, FastAPI , HTTPException
 from sqlalchemy.orm import Session
-
+from app.schemas import StudentResponse, StudentCreate
 from app.database import Base, engine
 from app.connection import get_db
 from app.schemas import StudentCreate
@@ -19,7 +19,7 @@ def home():
     }
 
 
-@app.post("/students")
+@app.post("/students", response_model = StudentResponse)
 def create_student(student: StudentCreate, db: Session = Depends(get_db)):
 
     db_student = models.Student(
@@ -38,8 +38,12 @@ def create_student(student: StudentCreate, db: Session = Depends(get_db)):
     }
 
 
-@app.get("/students/{student_id}")
-def get_students(student_id: int ,db: Session = Depends(get_db)):
+@app.get("/students", response_model = list[StudentResponse])
+def get_students(db: Session = Depends(get_db)):
+    student = db.query(models.Student).all()
+    
+@app.get("/students/{student_id}", response_model = StudentResponse)
+def get_student(student_id : int , db : Session = Depends(get_db)):
     student = (
         db.query(models.Student)
         .filter(models.Student.id == student_id)
@@ -53,7 +57,7 @@ def get_students(student_id: int ,db: Session = Depends(get_db)):
         )
     return student
 
-@app.put("/students/{student_id}")
+@app.put("/students/{student_id}", response_model = StudentResponse)
 def update_student(student_id: int ,student: StudentCreate, db: Session = Depends(get_db)):
     db_student = (
         db.query(models.Student)
