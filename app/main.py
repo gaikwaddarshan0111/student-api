@@ -5,8 +5,10 @@ from app.database import Base, engine
 from app.connection import get_db
 from app.schemas import StudentCreate
 from app import models
+from app.routers import students
 
 app = FastAPI()
+app.include_router(students.router)
 
 # Create all tables
 Base.metadata.create_all(bind=engine)
@@ -18,66 +20,28 @@ def home():
         "message": "Welcome to the Student API!"
     }
 
-
-@app.post("/students", response_model = StudentResponse)
-def create_student(student: StudentCreate, db: Session = Depends(get_db)):
-
-    db_student = models.Student(
-        name=student.name,
-        age=student.age,
-        course=student.course
-    )
-
-    db.add(db_student)
-    db.commit()
-    db.refresh(db_student)
-
-    return {
-        "message": "Student created successfully!",
-        "student": db_student
-    }
-
-
+"""
 @app.get("/students", response_model = list[StudentResponse])
 def get_students(db: Session = Depends(get_db)):
-    student = db.query(models.Student).all()
+    students = db.query(models.Student).all()
+    return students
     
 @app.get("/students/{student_id}", response_model = StudentResponse)
 def get_student(student_id : int , db : Session = Depends(get_db)):
-    student = (
+    students = (
         db.query(models.Student)
         .filter(models.Student.id == student_id)
         .first()
     )
 
-    if student is None:
+    if students is None:
         raise HTTPException(
             status_code = 404,
             detail = "Student not found"
         )
-    return student
+    return students
+    """
 
-@app.put("/students/{student_id}", response_model = StudentResponse)
-def update_student(student_id: int ,student: StudentCreate, db: Session = Depends(get_db)):
-    db_student = (
-        db.query(models.Student)
-        .filter(models.Student.id == student_id)
-        .first()
-    )
-    if db_student is None:
-        raise HTTPException(
-            status_code = 404,
-            detail = "Student not found"
-        )
-    
-    db_student.name = student.name
-    db_student.age = student.age
-    db_student.course = student.course
-
-    db.commit()
-    db.refresh(db_student)
-
-    return db_student
 
 @app.delete("/students/{student_id}")
 def delete_student(student_id: int, db: Session = Depends(get_db)):
