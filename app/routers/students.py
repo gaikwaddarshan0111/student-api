@@ -37,38 +37,27 @@ def create_student(
 
 @router.put("/{student_id}", response_model=StudentResponse)
 def update_student(student_id : int , student: StudentCreate, db: Session = Depends(get_db)):
-    db_student = (
-        db.query(models.Student)
-        .filter(models.Student.id == student_id)
-        .first()
+    update_student = crud.update_student(db, student_id, student)
 
-    )
-    if db_student is None:
+    if update_student is None:
         raise HTTPException(
             status_code=404,
             detail="Student not found"
         )
-    db_student.name = student.name
-    db_student.age = student.age
-    db_student.course = student.course
-    db.commit()
-    db.refresh(db_student)
-    return db_student
+    
+    return update_student
 
 
 @router.delete("/{student_id}")
 def delete_student(student_id: int, db:Session = Depends(get_db)):
-    db_Student =(
-        db.query(models.Student)
-        .filter(models.Student.id == student_id)
-        .first()
-    )
+    
+    delete_student = crud.delete_student(db , student_id)
+    
 
-    if db_Student is None:
+    if delete_student is None:
         raise HTTPException(
             status_code = 404,
             detail = "Student not found"
         )
-    db.delete(db_Student)
-    db.commit()
+  
     return {"message": "Student deleted successfully!"}
